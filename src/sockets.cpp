@@ -3,7 +3,7 @@
 namespace WinShell::sockets {
 
 	//////// Listener Socket
-	_ListenerSocket::_ListenerSocket(PSOCKADDR LocalAdress) {
+	_ListenerSocket::_ListenerSocket() {
 		KdPrint(("_ListenerSocket::_ListenerSocket(x)"));
 		auto status = utils::InitWsk(&_wskReg, &_providNpi);
 		if (!NT_SUCCESS(status)) {
@@ -15,37 +15,11 @@ namespace WinShell::sockets {
 			KdPrint(("Failed _ListenerSocket::_ListenerSocket(x)::CreateListeningSocket (0x%08x)", status));
 			return;
 		}
-		status = utils::BindListenerSocket(_sock, LocalAdress);
+		status = utils::BindListenerSocket(_sock);
 		if (!NT_SUCCESS(status)) {
 			KdPrint(("Failed _ListenerSocket::_ListenerSocket(x)::BindSocket (0x%08x)", status));
 			return;
 		}
-	}
-
-	_ListenerSocket::_ListenerSocket() {
-	}
-
-	NTSTATUS _ListenerSocket::InitSock(PSOCKADDR LocalAdress) {
-		KdPrint(("_ListenerSocket::InitSock()"));
-
-		auto status = utils::InitWsk(&_wskReg, &_providNpi);
-		if (!NT_SUCCESS(status)) {
-			KdPrint(("Failed _ListenerSocket::InitSock():InitWsk (0x%08x)", status));
-			return status;
-		}
-
-		status = utils::CreateListeningSocket(_providNpi, &_sock);
-		if (!NT_SUCCESS(status)) {
-			KdPrint(("Failed _ListenerSocket::InitSock()::CreateListeningSocket (0x%08x)", status));
-			return status;
-		}
-
-	    status = utils::BindListenerSocket(_sock, LocalAdress);
-		if (!NT_SUCCESS(status)) {
-			KdPrint(("Failed _ListenerSocket::InitSock()::BindSocket (0x%08x)", status));
-		}
-
-		return status;
 	}
 
 	NTSTATUS _ListenerSocket::Accept() {
@@ -60,7 +34,7 @@ namespace WinShell::sockets {
 	
 	////////Connection Socket
 
-	_ConnectionSocket::_ConnectionSocket(PSOCKADDR LocalAdress) {
+	_ConnectionSocket::_ConnectionSocket() {
 		KdPrint(("_ConnectionSocket::_ConnectionSocket(x)"));
 		auto status = utils::InitWsk(&_wskReg, &_providNpi);
 		if (!NT_SUCCESS(status)) {
@@ -72,43 +46,21 @@ namespace WinShell::sockets {
 			KdPrint(("Failed _ConnectionSocket::_ConnectionSocket(x)::CreateListeningSocket (0x%08x)", status));
 			return;
 		}
-		status = utils::BindConnectionSocket(_sock, LocalAdress);
+		status = utils::BindConnectionSocket(_sock);
 		if (!NT_SUCCESS(status)) {
 			KdPrint(("Failed _ConnectionSocket::_ConnectionSocket(x)::BindSocket (0x%08x)", status));
 			return;
 		}
 	}
 
-	_ConnectionSocket::_ConnectionSocket() {
-		return;
-	}
-
-	NTSTATUS _ConnectionSocket::InitSock(PSOCKADDR LocalAdress) {
-		KdPrint(("_ConnectionSocket::InitSock()"));
-
-		auto status = utils::InitWsk(&_wskReg, &_providNpi);
-		if (!NT_SUCCESS(status)) {
-			KdPrint(("Failed _ConnectionSocket::InitSock():InitWsk (0x%08x)", status));
-			return status;
-		}
-
-		status = utils::CreateConnectionSocket(&_providNpi, &_sock);
-		if (!NT_SUCCESS(status)) {
-			KdPrint(("Failed _ConnectionSocket::InitSock()::CreateListeningSocket (0x%08x)", status));
-			return status;
-		}
-
-		status = utils::BindConnectionSocket(_sock, LocalAdress);
-		if (!NT_SUCCESS(status)) {
-			KdPrint(("Failed ConnectionSocket::InitSock()::BindSocket (0x%08x)", status));
-		}
-
-		return status;
-	}
-
-	NTSTATUS _ConnectionSocket::Connect(PSOCKADDR ConnectionAdress) {
+	NTSTATUS _ConnectionSocket::Connect(endpoint ConnectionAdress) {
+		SOCKADDR adress = utils::ConvertStringToAdress(_providNpi, ConnectionAdress);
 		KdPrint(("_ConnectionSocket::Connect()"));
-		return utils::ConnectConnectionSocket(_sock, ConnectionAdress);
+		return utils::ConnectConnectionSocket(_sock, &adress);
+	}
+
+	NTSTATUS _ConnectionSocket::SendData(PVOID Data, ULONG DataSize) {
+		return utils::SendDataConnectionSocket(_sock, Data, DataSize);
 	}
 
 	_ConnectionSocket::~_ConnectionSocket() {
@@ -119,10 +71,6 @@ namespace WinShell::sockets {
 	///DatagramSocket
 
 	_DatagramSocket::_DatagramSocket() {
-		return;
-	}
-
-	_DatagramSocket::_DatagramSocket(WCHAR* LocalAdress, WCHAR* Port) {
 		KdPrint(("_DatagramSocket::_DatagramSocket(x)"));
 		auto status = utils::InitWsk(&_wskReg, &_providNpi);
 		if (!NT_SUCCESS(status)) {
@@ -134,43 +82,29 @@ namespace WinShell::sockets {
 			KdPrint(("Failed __DatagramSocket::_DatagramSocket(x)::CreateListeningSocket (0x%08x)", status));
 			return;
 		}
-		SOCKADDR adress = utils::ConvertStringToAdress(_providNpi, LocalAdress, Port);
-		status = utils::BindDatagramSocket(_sock, &adress);
+		status = utils::BindDatagramSocket(_sock);
 		if (!NT_SUCCESS(status)) {
 			KdPrint(("Failed _DatagramSocket::_DatagramSocket(x)::BindSocket (0x%08x)", status));
 			return;
 		}
 	}
 
-	NTSTATUS _DatagramSocket::InitSock(WCHAR* LocalAdress, WCHAR* Port) {
-		KdPrint(("_DatagramSocket::_DatagramSocket(x)"));
-		auto status = utils::InitWsk(&_wskReg, &_providNpi);
-		if (!NT_SUCCESS(status)) {
-			KdPrint(("Failed _DatagramSocket::_DatagramSocket(x)::InitWsk (0x%08x)", status));
-			return status;
-		}
-		status = utils::CreateDatagramSocket(&_providNpi, &_sock);
-		if (!NT_SUCCESS(status)) {
-			KdPrint(("Failed __DatagramSocket::_DatagramSocket(x)::CreateListeningSocket (0x%08x)", status));
-			return status;
-		}
-		SOCKADDR adress = utils::ConvertStringToAdress(_providNpi, LocalAdress, Port);
-		status = utils::BindDatagramSocket(_sock, &adress);
-		if (!NT_SUCCESS(status)) {
-			KdPrint(("Failed _DatagramSocket::_DatagramSocket(x)::BindSocket (0x%08x)", status));
-			return status;
-		}
 
-		return status;
+	NTSTATUS _DatagramSocket::SendData(PVOID Data, endpoint ConnectionAdress){
+		SOCKADDR adress = utils::ConvertStringToAdress(_providNpi, ConnectionAdress);
+		return utils::SendDataDatagramSocket(_sock, Data, sizeof(Data), &adress);
 	}
 
-	NTSTATUS _DatagramSocket::SendData(PVOID Data, WCHAR* LocalAdress, WCHAR* Port){
-		SOCKADDR ConnectionAdress = utils::ConvertStringToAdress(_providNpi, LocalAdress, Port);
-		return utils::SendDataDtagramSocket(_sock, Data, sizeof(Data), &ConnectionAdress);
+	NTSTATUS _DatagramSocket::GetData(PVOID Data) {
+		return utils::GetDataDatagramSocket(_sock, Data, sizeof(Data));
 	}
-
+	
 	_DatagramSocket::~_DatagramSocket() {
 		KdPrint(("_DatagramSocket::~_DatagramSocket()"));
+		utils::DeregisterWsk(&_wskReg);
+	}
+
+	void _DatagramSocket::Unregister() {
 		utils::DeregisterWsk(&_wskReg);
 	}
 }

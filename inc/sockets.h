@@ -4,10 +4,7 @@ namespace WinShell::sockets {
 
 	typedef class _ListenerSocket {
 	public:
-		_ListenerSocket(PSOCKADDR LocalAdress);
 		_ListenerSocket();
-
-		NTSTATUS InitSock(PSOCKADDR LocalAdress);
 
 		NTSTATUS Accept();
 
@@ -23,12 +20,10 @@ namespace WinShell::sockets {
 
 	typedef class _ConnectionSocket {
 	public:
-		_ConnectionSocket(PSOCKADDR LocalAdress);
 		_ConnectionSocket();
 
-		NTSTATUS InitSock(PSOCKADDR LocalAdress);
-
-		NTSTATUS Connect(PSOCKADDR ConnectionAdress);
+		NTSTATUS Connect(endpoint ConnectionAdress);
+		NTSTATUS SendData(PVOID Data, ULONG DataSize);
 
 		~_ConnectionSocket();
 
@@ -42,12 +37,11 @@ namespace WinShell::sockets {
 
 	typedef class _DatagramSocket {
 	public:
-		_DatagramSocket(WCHAR* LocalAdress,WCHAR* Port);
 		_DatagramSocket();
 
-		NTSTATUS InitSock(WCHAR* LocalAdress, WCHAR* Port);
-
-		NTSTATUS SendData(PVOID Data, WCHAR* LocalAdress, WCHAR* Port);
+		NTSTATUS SendData(PVOID Data, endpoint ConnectionAdress);
+		NTSTATUS GetData(PVOID Data);
+		void Unregister();
 
 		~_DatagramSocket();
 		
