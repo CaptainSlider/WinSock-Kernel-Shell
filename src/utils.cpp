@@ -81,6 +81,32 @@ namespace WinShell::utils {
 	}
 
 
+	void CloseSocket(PWSK_SOCKET sock) {
+		KEVENT event;
+		PIRP Irp = IoAllocateIrp(1, FALSE);
+
+		KeInitializeEvent(&event, NotificationEvent, FALSE);
+
+		SOCKADDR LocalAdress = { 0 };
+		LocalAdress.sa_family = AF_INET;
+
+		IoSetCompletionRoutine(Irp, IoCompletionRoutine, &event, TRUE, TRUE, TRUE);
+
+		auto Dispatch = (PWSK_PROVIDER_BASIC_DISPATCH)sock->Dispatch;
+		auto status = Dispatch->WskCloseSocket(sock, Irp);
+		if (status == STATUS_PENDING) {
+			KeWaitForSingleObject(&event, Executive, KernelMode, false, NULL);
+
+			status = Irp->IoStatus.Status;
+			if (!NT_SUCCESS(status)) {
+				IoFreeIrp(Irp);
+				return;
+			}
+		}
+
+		IoFreeIrp(Irp);
+	}
+
 	//Connection Socket
 	/////////////////
 	NTSTATUS CreateConnectionSocket(PWSK_PROVIDER_NPI wskProviderNpi, PWSK_SOCKET* sock) {
@@ -106,10 +132,8 @@ namespace WinShell::utils {
 				IoFreeIrp(Irp);
 				return status;
 			}
-
-			*sock = (PWSK_SOCKET)Irp->IoStatus.Information;
 		}
-
+		*sock = (PWSK_SOCKET)Irp->IoStatus.Information;
 		IoFreeIrp(Irp);
 		return status;
 	}
@@ -127,6 +151,33 @@ namespace WinShell::utils {
 
 		auto Dispatch = (PWSK_PROVIDER_CONNECTION_DISPATCH)sock->Dispatch;
 		auto status = Dispatch->WskBind(sock, &LocalAdress, 0, Irp);
+		if (status == STATUS_PENDING) {
+			KeWaitForSingleObject(&event, Executive, KernelMode, false, NULL);
+
+			status = Irp->IoStatus.Status;
+			if (!NT_SUCCESS(status)) {
+				IoFreeIrp(Irp);
+				return status;
+			}
+		}
+
+		IoFreeIrp(Irp);
+		return status;
+	}
+
+	NTSTATUS DisconnectConnectionSocket(PWSK_SOCKET sock) {
+		KEVENT event;
+		PIRP Irp = IoAllocateIrp(1, FALSE);
+
+		KeInitializeEvent(&event, NotificationEvent, FALSE);
+
+		SOCKADDR LocalAdress = { 0 };
+		LocalAdress.sa_family = AF_INET;
+
+		IoSetCompletionRoutine(Irp, IoCompletionRoutine, &event, TRUE, TRUE, TRUE);
+
+		auto Dispatch = (PWSK_PROVIDER_CONNECTION_DISPATCH)sock->Dispatch;
+		auto status = Dispatch->WskDisconnect(sock, NULL, 0, Irp);
 		if (status == STATUS_PENDING) {
 			KeWaitForSingleObject(&event, Executive, KernelMode, false, NULL);
 
@@ -179,7 +230,7 @@ namespace WinShell::utils {
 		IoSetCompletionRoutine(Irp, IoCompletionRoutine, &event, TRUE, TRUE, TRUE);
 
 		auto Dispatch = (PWSK_PROVIDER_CONNECTION_DISPATCH)sock->Dispatch;
-		auto status = Dispatch->WskSend(sock, &buffer, 0, Irp);
+		auto status = Dispatch->WskSend(sock,&buffer,0,Irp);
 		if (!NT_SUCCESS(status)) {
 			IoFreeMdl(buffer.Mdl);
 			KdPrint(("Failed status (0x08X"));
@@ -198,6 +249,48 @@ namespace WinShell::utils {
 			}
 		}
 
+		auto GetDataSize = Irp->IoStatus.Information;
+		if ((USHORT)GetDataSize < 0) {
+			IoFreeMdl(buffer.Mdl);
+			status = STATUS_INVALID_PARAMETER;
+		}
+
+		IoFreeIrp(Irp);
+		return status;
+	}
+
+	NTSTATUS GetDataConnectionSocket(PWSK_SOCKET sock, PVOID Data, ULONG DataSize) {
+		KEVENT event;
+		PIRP Irp = IoAllocateIrp(1, FALSE);
+		WSK_BUF buffer;
+		buffer.Mdl = IoAllocateMdl(Data, DataSize, FALSE, FALSE, NULL);
+		MmBuildMdlForNonPagedPool(buffer.Mdl);
+		buffer.Offset = 0;
+		buffer.Length = DataSize;
+		KeInitializeEvent(&event, NotificationEvent, FALSE);
+
+		IoSetCompletionRoutine(Irp, IoCompletionRoutine, &event, TRUE, TRUE, TRUE);
+
+		auto Dispatch = (PWSK_PROVIDER_CONNECTION_DISPATCH)sock->Dispatch;
+		auto status = Dispatch->WskReceive(sock, &buffer, 0, Irp);
+
+		if (status == STATUS_PENDING) {
+			KeWaitForSingleObject(&event, Executive, KernelMode, false, NULL);
+
+			status = Irp->IoStatus.Status;
+			if (!NT_SUCCESS(status)) {
+				KdPrint(("Failed status (0x%08X)", status));
+				IoFreeIrp(Irp);
+				return status;
+			}
+		}
+		if (!NT_SUCCESS(status)) {
+			IoFreeMdl(buffer.Mdl);
+			KdPrint(("Failed status (0x08X"));
+			IoFreeIrp(Irp);
+			return status;
+		}
+		KdPrint(("status = 0x%08X", status));
 		auto GetDataSize = Irp->IoStatus.Information;
 		if ((USHORT)GetDataSize < 0) {
 			IoFreeMdl(buffer.Mdl);
@@ -412,7 +505,6 @@ namespace WinShell::utils {
 		IoSetCompletionRoutine(Irp, IoCompletionRoutine, &event, TRUE, TRUE, TRUE);
 
 		auto Dispatch = (PWSK_PROVIDER_LISTEN_DISPATCH)sock->Dispatch;
-
 		auto status = Dispatch->WskAccept(sock, 0, 0, nullptr, nullptr, nullptr, Irp);
 		if (status == STATUS_PENDING) {
 			KeWaitForSingleObject(&event, Executive, KernelMode, false, NULL);

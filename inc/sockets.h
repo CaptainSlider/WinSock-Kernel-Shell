@@ -15,15 +15,19 @@ namespace WinShell::sockets {
 		WSK_PROVIDER_NPI _providNpi;
 		WSK_REGISTRATION _wskReg;
 
-	}* PListenerSocket, ListenerSocket;
+	}*PListenerSocket, ListenerSocket;
 
+}
 
+namespace WinShell::sockets::tcp {
 	typedef class _ConnectionSocket {
 	public:
 		_ConnectionSocket();
 
 		NTSTATUS Connect(endpoint ConnectionAdress);
 		NTSTATUS SendData(PVOID Data, ULONG DataSize);
+		NTSTATUS ReceivData(PVOID Data, ULONG DataSize);
+		NTSTATUS Disconnect();
 
 		~_ConnectionSocket();
 
@@ -33,15 +37,17 @@ namespace WinShell::sockets {
 		WSK_REGISTRATION _wskReg;
 
 
-	}* PConnectionSocket, ConnectionSocket;
+	}*PSocket, Socket;
+}
+
+namespace WinShell::sockets::udp{
 
 	typedef class _DatagramSocket {
 	public:
 		_DatagramSocket();
 
 		NTSTATUS SendData(PVOID Data, endpoint ConnectionAdress);
-		NTSTATUS GetData(PVOID Data);
-		void Unregister();
+		NTSTATUS ReceivData(PVOID Data, ULONG DataSize);
 
 		~_DatagramSocket();
 		
@@ -50,5 +56,5 @@ namespace WinShell::sockets {
 		WSK_PROVIDER_NPI _providNpi;
 		WSK_REGISTRATION _wskReg;
 
-	}* PDatagramSocket, DatagramSocket;
+	}* PSocket, Socket;
 }
