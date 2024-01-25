@@ -55,19 +55,19 @@ namespace WinShell::utils {
 		clientNpi.ClientContext = nullptr;
 		clientNpi.Dispatch = &wskClientDispatch;
 
-		KIRQL irql = KeGetCurrentIrql();
-		if (irql == PASSIVE_LEVEL) {
-			KdPrint(("Irql == PASSIVE LEVEL"));
-		}
 		auto status = WskRegister(&clientNpi, wskRegistretion);
 		if (!NT_SUCCESS(status)) {
+			std::exception e("Failed to InitWsk::WskRegsiter()");
+			throw e;
 			KdPrint(("Failed to InitWsk::WskRegsiter() 0x%08X", status));
 			return status;
 		}
 
 		status = WskCaptureProviderNPI(wskRegistretion, WSK_INFINITE_WAIT, wskProviderNpi);
 		if (!NT_SUCCESS(status)) {
-			KdPrint(("Failed to InitWsk::WskCaptureProviderNP 0x%08X", status));
+			std::exception e("Failed to InitWsk::WskCaptureProviderNPI");
+			throw e;
+			KdPrint(("Failed to InitWsk::WskCaptureProviderNPI 0x%08X", status));
 			WskDeregister(wskRegistretion);
 			return status;
 		}

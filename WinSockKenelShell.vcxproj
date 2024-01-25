@@ -68,6 +68,7 @@
   <PropertyGroup />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <DebuggerFlavor>DbgengKernelDebugger</DebuggerFlavor>
+    <IncludePath>$(VC_IncludePath);$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <DebuggerFlavor>DbgengKernelDebugger</DebuggerFlavor>
@@ -86,7 +87,10 @@
       <AdditionalDependencies>%(AdditionalDependencies);$(KernelBufferOverflowLib);$(DDK_LIB_PATH)ntoskrnl.lib;$(DDK_LIB_PATH)hal.lib;$(DDK_LIB_PATH)wmilib.lib;$(DDK_LIB_PATH)\netio.lib</AdditionalDependencies>
     </Link>
     <ClCompile>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <PreprocessorDefinitions>_HAS_EXCEPTIONS=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ExceptionHandling>Sync</ExceptionHandling>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -102,13 +106,34 @@
     <ClCompile Include="src\utils.cpp" />
     <ClCompile Include="src\WinShell.cpp" />
     <ClCompile Include="TEST\sourcs.cpp" />
+    <ClCompile Include="try_catch\common.cpp" />
+    <ClCompile Include="try_catch\cpp_support.cpp" />
+    <ClCompile Include="try_catch\exc_common.cpp" />
+    <ClCompile Include="try_catch\exc_dispatch.cpp" />
+    <ClCompile Include="try_catch\fh4.cpp" />
+    <ClCompile Include="try_catch\tlsf.c" />
+    <ClCompile Include="try_catch\type_info.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\sockets.h" />
     <ClInclude Include="inc\utils.h" />
     <ClInclude Include="inc\WinShell.h" />
+    <ClInclude Include="try_catch\common.hpp" />
+    <ClInclude Include="try_catch\cpp_support.hpp" />
+    <ClInclude Include="try_catch\delete_constructors.hpp" />
+    <ClInclude Include="try_catch\exc_common.hpp" />
+    <ClInclude Include="try_catch\globals.hpp" />
+    <ClInclude Include="try_catch\memory_manager.hpp" />
+    <ClInclude Include="try_catch\tlsf.h" />
+    <ClInclude Include="try_catch\type_info.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="try_catch\throw_exception.asm" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
+  <PropertyGroup>
+    <DisableKernelFlag>true</DisableKernelFlag>
+  </PropertyGroup>
 </Project>

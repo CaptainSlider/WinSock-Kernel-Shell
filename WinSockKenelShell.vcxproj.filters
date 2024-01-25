@@ -26,6 +26,9 @@
     <Filter Include="Source Files\TEST">
       <UniqueIdentifier>{69191465-ec68-45db-84c7-27c029e6ce48}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\try">
+      <UniqueIdentifier>{7ad94f46-12eb-432c-bfed-5b568cf6a2b3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\sockets.cpp">
@@ -40,6 +43,27 @@
     <ClCompile Include="src\WinShell.cpp">
       <Filter>Source Files\src</Filter>
     </ClCompile>
+    <ClCompile Include="try_catch\cpp_support.cpp">
+      <Filter>Source Files\try</Filter>
+    </ClCompile>
+    <ClCompile Include="try_catch\exc_common.cpp">
+      <Filter>Source Files\try</Filter>
+    </ClCompile>
+    <ClCompile Include="try_catch\exc_dispatch.cpp">
+      <Filter>Source Files\try</Filter>
+    </ClCompile>
+    <ClCompile Include="try_catch\fh4.cpp">
+      <Filter>Source Files\try</Filter>
+    </ClCompile>
+    <ClCompile Include="try_catch\tlsf.c">
+      <Filter>Source Files\try</Filter>
+    </ClCompile>
+    <ClCompile Include="try_catch\type_info.cpp">
+      <Filter>Source Files\try</Filter>
+    </ClCompile>
+    <ClCompile Include="try_catch\common.cpp">
+      <Filter>Source Files\try</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\sockets.h">
@@ -51,5 +75,34 @@
     <ClInclude Include="inc\WinShell.h">
       <Filter>Header Files\inc</Filter>
     </ClInclude>
+    <ClInclude Include="try_catch\common.hpp">
+      <Filter>Source Files\try</Filter>
+    </ClInclude>
+    <ClInclude Include="try_catch\cpp_support.hpp">
+      <Filter>Source Files\try</Filter>
+    </ClInclude>
+    <ClInclude Include="try_catch\delete_constructors.hpp">
+      <Filter>Source Files\try</Filter>
+    </ClInclude>
+    <ClInclude Include="try_catch\exc_common.hpp">
+      <Filter>Source Files\try</Filter>
+    </ClInclude>
+    <ClInclude Include="try_catch\globals.hpp">
+      <Filter>Source Files\try</Filter>
+    </ClInclude>
+    <ClInclude Include="try_catch\memory_manager.hpp">
+      <Filter>Source Files\try</Filter>
+    </ClInclude>
+    <ClInclude Include="try_catch\tlsf.h">
+      <Filter>Source Files\try</Filter>
+    </ClInclude>
+    <ClInclude Include="try_catch\type_info.hpp">
+      <Filter>Source Files\try</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="try_catch\throw_exception.asm">
+      <Filter>Source Files\try</Filter>
+    </MASM>
   </ItemGroup>
 </Project>
