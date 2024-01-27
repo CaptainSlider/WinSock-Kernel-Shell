@@ -11,18 +11,23 @@ void ThreadOne(
 	{
 		globals::mem_manager = new hh::tlsf_allocator();
 		WinShell::sockets::tcp::Socket socket;
-		WinShell::endpoint endpoint(L"192.168.43.128", L"1337");
+		WinShell::endpoint endpoint(L"192.168.0.31", L"1337");
 		socket.Connect(endpoint);
 		char msg[] = "Hello";
 		socket.SendData(msg, sizeof(msg));
 		char buffer[50] = { 0 };
 		status = socket.ReceivData(buffer, sizeof(buffer));
-		KdPrint(("status = 0x%08X", status));
-		throw std::exception{ "Hello" };
+		KdPrint(("%s\n", buffer));
 	}
-	catch (std::exception& e)
+	catch (WinShell::exception & e)
 	{
-		KdPrint(("Failed. %s\n", e.what()));
+		globals::mem_manager->~memory_manager();
+		auto* pTemp = globals::mem_manager;
+		globals::mem_manager = nullptr;
+		operator delete(pTemp);
+		__crt_deinit();
+		KdPrint(("Failed: %s     (status = 0x%08X) \n", e.e.what(), e.status));
+		PsTerminateSystemThread(e.status);
 	}
 	if (globals::mem_manager != nullptr)
 	{

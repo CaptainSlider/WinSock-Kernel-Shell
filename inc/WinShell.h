@@ -13,4 +13,9 @@ namespace WinShell {
 		UNICODE_STRING _IpAdress;
 		UNICODE_STRING _Port;
 	}* Pendpoint, endpoint;
+	typedef struct _exception
+	{
+		std::exception e;
+		NTSTATUS status;
+	}* Pexception, exception;
 }

@@ -57,16 +57,12 @@ namespace WinShell::utils {
 
 		auto status = WskRegister(&clientNpi, wskRegistretion);
 		if (!NT_SUCCESS(status)) {
-			std::exception e("Failed to InitWsk::WskRegsiter()");
-			throw e;
 			KdPrint(("Failed to InitWsk::WskRegsiter() 0x%08X", status));
 			return status;
 		}
 
 		status = WskCaptureProviderNPI(wskRegistretion, WSK_INFINITE_WAIT, wskProviderNpi);
 		if (!NT_SUCCESS(status)) {
-			std::exception e("Failed to InitWsk::WskCaptureProviderNPI");
-			throw e;
 			KdPrint(("Failed to InitWsk::WskCaptureProviderNPI 0x%08X", status));
 			WskDeregister(wskRegistretion);
 			return status;
