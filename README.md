@@ -9,8 +9,8 @@ Currently supported:
 This project uses the C++ port of exceptions.
 Links to repositories from which the port of C++ exceptions was taken:
 
-https://github.com/DymOK93/KTL
-https://github.com/avakar/vcrtl
-https://github.com/Shtan7/Hypervisor
+https://github.com/DymOK93/KTL  
+https://github.com/avakar/vcrtl  
+https://github.com/Shtan7/Hypervisor  
 
 
